@@ -3,6 +3,12 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
     Object.defineProperty(exports, "__esModule", { value: true });
     var tiledImage = new Image();
     tiledImage.src = "res/tiled.png";
+    var testImage = new Image();
+    testImage.src = "res/test.png";
+    var DecorumObject;
+    (function (DecorumObject) {
+        DecorumObject["Test"] = "test";
+    })(DecorumObject = exports.DecorumObject || (exports.DecorumObject = {}));
     var TileMaterial;
     (function (TileMaterial) {
         TileMaterial["Blank"] = "blank";
@@ -11,9 +17,15 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
         TileMaterial["Tiled"] = "tiled";
     })(TileMaterial = exports.TileMaterial || (exports.TileMaterial = {}));
     var Decorum = (function () {
-        function Decorum(meta, direction) {
+        function Decorum(decorumObject, meta, direction) {
+            this.decorumObject = decorumObject;
             this.meta = meta, this.direction = direction;
         }
+        Decorum.prototype.getHitShape = function () {
+            return new data_1.HitBox(new data_1.Vec2d(0, 20), new data_1.Vec2d(32, 32));
+        };
+        Decorum.prototype.getDecorumObject = function () { return this.decorumObject; };
+        Decorum.prototype.setDecorumObject = function (decObj) { this.decorumObject = decObj; };
         return Decorum;
     }());
     exports.Decorum = Decorum;
@@ -25,7 +37,10 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
             this.decor = decor;
         }
         Tile.prototype.getMaterial = function () { return this.material; };
+        Tile.prototype.setMaterial = function (material) { this.material = material; };
         Tile.prototype.getMeta = function () { return this.meta; };
+        Tile.prototype.getDecor = function () { return this.decor; };
+        Tile.prototype.setDecor = function (decor) { this.decor = decor; };
         Tile.prototype.getTilePosition = function () { return this.tilePosition; };
         Tile.prototype.getPosition = function () { return this.tilePosition.mul(constants_1.TILESIZE); };
         Tile.prototype.getCentre = function () { return this.tilePosition.mul(constants_1.TILESIZE).add(new data_1.Vec2d(constants_1.TILESIZE / 2, constants_1.TILESIZE / 2)); };
@@ -54,10 +69,28 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
         Room.prototype.getDimension = function () {
             return this.getTileDimension().mul(constants_1.TILESIZE);
         };
+        Room.prototype.isValidTile = function (tilePos) {
+            var valid = false;
+            if ((0 <= tilePos.getX()) && (tilePos.getX() < this.tiles.length)) {
+                var tilerow = this.tiles[tilePos.getX()];
+                tilerow.forEach(function (tile) { if (tile.getTilePosition().getY() == tilePos.getY())
+                    valid = true; });
+            }
+            return valid;
+        };
+        Room.prototype.isWalkableTile = function (tilePos) {
+            return this.isValidTile(tilePos);
+        };
         return Room;
     }());
     exports.Room = Room;
     function drawTile(ctx, translation, room, tilePos) {
+        drawTileFloor(ctx, translation, room, tilePos);
+        var tile = room.getTile(tilePos);
+        tile.getDecor().forEach(function (decorum) { drawDecorum(ctx, translation, room, tilePos, decorum); });
+    }
+    exports.drawTile = drawTile;
+    function drawTileFloor(ctx, translation, room, tilePos) {
         var tile = room.getTile(tilePos);
         var pos = tile.getPosition();
         switch (tile.getMaterial()) {
@@ -79,6 +112,21 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
             }
         }
     }
-    exports.drawTile = drawTile;
+    exports.drawTileFloor = drawTileFloor;
+    function drawTileDecor(ctx, translation, room, tilePos) {
+        var tile = room.getTile(tilePos);
+        tile.getDecor().forEach(function (decorum) { drawDecorum(ctx, translation, room, tilePos, decorum); });
+    }
+    exports.drawTileDecor = drawTileDecor;
+    function drawDecorum(ctx, translation, room, tilePos, decorum) {
+        var tile = room.getTile(tilePos);
+        var pos = tile.getPosition();
+        switch (decorum.decorumObject) {
+            case DecorumObject.Test: {
+                ctx.drawImage(testImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - testImage.height + 32);
+            }
+        }
+    }
+    exports.drawDecorum = drawDecorum;
 });
 //# sourceMappingURL=room.js.map

@@ -1,10 +1,17 @@
-import {Vec2d, TilePosition} from "./data";
+import {Vec2d, TilePosition, HitBox, HitCircle, HitTriangle, HitShape, doesCollide} from "./data";
 import {Cardinal, Diagonal, Direction} from "./direction";
 import {TILESIZE} from "./constants";
 
 
 var tiledImage = new Image();
 tiledImage.src = "res/tiled.png";
+
+var testImage = new Image();
+testImage.src = "res/test.png";
+
+export enum DecorumObject {
+	Test = "test"
+}
 
 export enum TileMaterial {
 	Blank = "blank",
@@ -13,10 +20,18 @@ export enum TileMaterial {
 	Tiled = "tiled"
 }
 
-export class Decorum {
+export class Decorum {	
+	decorumObject : DecorumObject;
 	meta : String;
 	direction : Cardinal;
-	constructor(meta : String, direction : Cardinal) {this.meta = meta, this.direction = direction}
+	
+	getHitShape() {
+		return new HitBox(new Vec2d(0,20), new Vec2d(32,32));
+	}
+	
+	getDecorumObject() {return this.decorumObject;}
+	setDecorumObject(decObj : DecorumObject) {this.decorumObject = decObj;}
+	constructor(decorumObject : DecorumObject, meta : String, direction : Cardinal) {this.decorumObject = decorumObject; this.meta = meta, this.direction = direction}
 }
 
 export class Tile {
@@ -26,7 +41,11 @@ export class Tile {
 	decor : Decorum[];
 	
 	getMaterial() {return this.material;}
+	setMaterial(material : TileMaterial) {this.material = material;}
 	getMeta() {return this.meta;}
+	
+	getDecor() {return this.decor;}
+	setDecor(decor : Decorum[]) {this.decor = decor;}
 	
 	getTilePosition() {return this.tilePosition;}
 	getPosition() {return this.tilePosition.mul(TILESIZE);}
@@ -52,11 +71,30 @@ export class Room {
 		return this.getTileDimension().mul(TILESIZE);
 	}
 	
+	isValidTile(tilePos : TilePosition) : boolean {
+		var valid = false;
+		if ((0 <= tilePos.getX()) && (tilePos.getX() < this.tiles.length)) {
+			var tilerow = this.tiles[tilePos.getX()];
+			tilerow.forEach(function (tile){if (tile.getTilePosition().getY() == tilePos.getY()) valid = true;});
+		}
+		return valid;
+	}
+	
+	isWalkableTile(tilePos : TilePosition) : boolean {
+		return this.isValidTile(tilePos); // TODO: Some materials will probably need to be "unwalkable".
+	}
+	
 	constructor(name : String, tiles : Tile[][], initialTile : TilePosition) {this.name = name; this.tiles = tiles; this.initialTile = initialTile;}
 }
 
-export function drawTile(ctx : CanvasRenderingContext2D, translation : Vec2d, room : Room, tilePos : TilePosition)
-{	
+
+export function drawTile(ctx : CanvasRenderingContext2D, translation : Vec2d, room : Room, tilePos : TilePosition) {	
+	drawTileFloor(ctx, translation, room, tilePos);
+	var tile = room.getTile(tilePos);
+	tile.getDecor().forEach(function(decorum) {drawDecorum(ctx, translation, room, tilePos, decorum);});
+}
+
+export function drawTileFloor(ctx : CanvasRenderingContext2D, translation : Vec2d, room : Room, tilePos : TilePosition) {	
 	var tile = room.getTile(tilePos);
 	var pos = tile.getPosition();
 	switch(tile.getMaterial()) {
@@ -80,5 +118,19 @@ export function drawTile(ctx : CanvasRenderingContext2D, translation : Vec2d, ro
 			ctx.drawImage(tiledImage, pos.getX() + translation.getX(), pos.getY() + translation.getY());	
 		}
 	}
-	
+}
+
+export function drawTileDecor(ctx : CanvasRenderingContext2D, translation : Vec2d, room : Room, tilePos : TilePosition) {
+	var tile = room.getTile(tilePos);
+	tile.getDecor().forEach(function(decorum){drawDecorum(ctx,translation,room,tilePos,decorum);});
+}
+
+export function drawDecorum(ctx : CanvasRenderingContext2D, translation : Vec2d, room : Room, tilePos : TilePosition, decorum : Decorum){
+	var tile = room.getTile(tilePos);
+	var pos = tile.getPosition();
+	switch(decorum.decorumObject) {
+		case DecorumObject.Test: {
+			ctx.drawImage(testImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - testImage.height + 32);
+		}
+	}
 }
