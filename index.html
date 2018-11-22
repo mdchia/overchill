@@ -3,16 +3,15 @@
 <title>Project Overchill</title>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-<body onresize="resizeCanvas()" onload="resizeCanvas()">
+<body id="body">
 <canvas id="gamecanvas" width="600" height="400" style="border:1px solid #000000;">
 </canvas>
-<script src="game.js"></script>
 <script> 
-function resizeCanvas() {
-    canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-	canvasSizeChanged();
-}
+var require = {
+    baseUrl: "game"
+};
 </script>
+<script data-main="game" src="require.js"></script>
+
 </body>
 </html>
