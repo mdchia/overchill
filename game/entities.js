@@ -34,29 +34,31 @@ define(["require", "exports", "./data", "./direction"], function (require, expor
         Entity.prototype.setDimensions = function (dim) { this.dimensions = dim; };
         Entity.prototype.getDirection = function () { return this.direction; };
         Entity.prototype.setDirection = function (direction) { this.direction = direction; };
-        Entity.prototype.getTilePosition = function () { return this.pos.add(this.dimensions.mul(0.25)).toTilePosition(); };
-        Entity.prototype.update = function (room) {
-            var dest = this.getPosition().add(this.getVelocity());
-            var destTilePos = dest.toTilePosition();
-            if (room.isWalkableTile(destTilePos)) {
-                var destTile = room.getTile(destTilePos);
-                var decorCollide = false;
-                var hs2 = this.getBaseHitShape().translate(dest);
-                destTile.getDecor().forEach(function (decorum) {
-                    var hs1 = decorum.getHitShape().translate(destTilePos.toPosition());
-                    if (data_1.doesCollide(hs1, hs2)) {
-                        decorCollide = true;
+        Entity.prototype.getTilePosition = function () { return this.getPosition().toTilePosition(); };
+        Entity.prototype.update = function (room, deltaTime) {
+            if (this.getVelocity().length() != 0) {
+                var dest = this.getPosition().add(this.getVelocity().mul(deltaTime));
+                var destTilePos = dest.toTilePosition();
+                if (room.isWalkableTile(destTilePos)) {
+                    var destTile = room.getTile(destTilePos);
+                    var decorCollide = false;
+                    var hs2 = this.getBaseHitShape().translate(dest);
+                    destTile.getDecor().forEach(function (decorum) {
+                        var hs1 = decorum.getHitShape().translate(destTilePos.toPosition());
+                        if (data_1.doesCollide(hs1, hs2)) {
+                            decorCollide = true;
+                        }
+                    });
+                    if (!decorCollide) {
+                        this.setPosition(this.getPosition().add(this.getVelocity().mul(deltaTime)));
                     }
-                });
-                if (!decorCollide) {
-                    this.setPosition(this.getPosition().add(this.getVelocity()));
+                    else {
+                        this.setVelocity(new data_1.Vec2d(0, 0));
+                    }
                 }
                 else {
                     this.setVelocity(new data_1.Vec2d(0, 0));
                 }
-            }
-            else {
-                this.setVelocity(new data_1.Vec2d(0, 0));
             }
         };
         return Entity;

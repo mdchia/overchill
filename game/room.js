@@ -5,9 +5,15 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
     tiledImage.src = "res/tiled.png";
     var testImage = new Image();
     testImage.src = "res/test.png";
+    var wall1TopImage = new Image();
+    wall1TopImage.src = "res/wall1top.png";
+    var glassTopImage = new Image();
+    glassTopImage.src = "res/glasstop.png";
     var DecorumObject;
     (function (DecorumObject) {
         DecorumObject["Test"] = "test";
+        DecorumObject["Wall1Top"] = "wall1top";
+        DecorumObject["GlassTop"] = "glasstop";
     })(DecorumObject = exports.DecorumObject || (exports.DecorumObject = {}));
     var TileMaterial;
     (function (TileMaterial) {
@@ -22,7 +28,36 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
             this.meta = meta, this.direction = direction;
         }
         Decorum.prototype.getHitShape = function () {
-            return new data_1.HitBox(new data_1.Vec2d(0, 20), new data_1.Vec2d(32, 32));
+            switch (this.decorumObject) {
+                case DecorumObject.Test: {
+                    return new data_1.HitBox(new data_1.Vec2d(0, 20), new data_1.Vec2d(32, 32));
+                    break;
+                }
+                case DecorumObject.Wall1Top: {
+                    return new data_1.HitBox(new data_1.Vec2d(0, 22), new data_1.Vec2d(32, 32));
+                    break;
+                }
+                case DecorumObject.GlassTop: {
+                    return new data_1.HitBox(new data_1.Vec2d(0, 22), new data_1.Vec2d(32, 32));
+                    break;
+                }
+            }
+        };
+        Decorum.prototype.getOriginPoint = function () {
+            switch (this.decorumObject) {
+                case DecorumObject.Test: {
+                    return new data_1.Vec2d(16, 28);
+                    break;
+                }
+                case DecorumObject.Wall1Top: {
+                    return new data_1.Vec2d(16, 32);
+                    break;
+                }
+                case DecorumObject.GlassTop: {
+                    return new data_1.Vec2d(16, 32);
+                    break;
+                }
+            }
         };
         Decorum.prototype.getDecorumObject = function () { return this.decorumObject; };
         Decorum.prototype.setDecorumObject = function (decObj) { this.decorumObject = decObj; };
@@ -71,9 +106,9 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
         };
         Room.prototype.isValidTile = function (tilePos) {
             var valid = false;
-            if ((0 <= tilePos.getX()) && (tilePos.getX() < this.tiles.length)) {
-                var tilerow = this.tiles[tilePos.getX()];
-                tilerow.forEach(function (tile) { if (tile.getTilePosition().getY() == tilePos.getY())
+            if ((0 <= tilePos.getY()) && (tilePos.getY() < this.tiles.length)) {
+                var tilerow = this.tiles[tilePos.getY()];
+                tilerow.forEach(function (tile) { if (tile.getTilePosition().getX() == tilePos.getX())
                     valid = true; });
             }
             return valid;
@@ -124,6 +159,15 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
         switch (decorum.decorumObject) {
             case DecorumObject.Test: {
                 ctx.drawImage(testImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - testImage.height + 32);
+                break;
+            }
+            case DecorumObject.Wall1Top: {
+                ctx.drawImage(wall1TopImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - wall1TopImage.height + 64);
+                break;
+            }
+            case DecorumObject.GlassTop: {
+                ctx.drawImage(glassTopImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - glassTopImage.height + 64);
+                break;
             }
         }
     }

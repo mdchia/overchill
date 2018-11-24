@@ -4,7 +4,7 @@ import {DecorumObject, TileMaterial, Decorum, Tile, Room, drawTile, drawTileFloo
 
 
 interface updatable {
-	update: (room : Room) => void;
+	update: (room : Room, deltaTime : number) => void;
 }
 
 interface drawable {
@@ -40,30 +40,32 @@ export abstract class Entity implements updatable, drawable {
 	getDirection() {return this.direction;}
 	setDirection(direction : Direction) {this.direction = direction;}
 	
-	getTilePosition() {return this.pos.add(this.dimensions.mul(0.25)).toTilePosition();}
+	getTilePosition() {return this.getPosition().toTilePosition();}
 	
-	update(room : Room) {
-		var dest = this.getPosition().add(this.getVelocity());
-		var destTilePos = dest.toTilePosition();
-		if (room.isWalkableTile(destTilePos)){
-			var destTile = room.getTile(destTilePos);
-			var decorCollide = false;
-			var hs2 = this.getBaseHitShape().translate(dest);
-			destTile.getDecor().forEach(function (decorum : Decorum) {
-				var hs1 = decorum.getHitShape().translate(destTilePos.toPosition());
-				if (doesCollide(hs1, hs2)){
-					decorCollide = true;
+	update(room : Room, deltaTime : number) {
+		if (this.getVelocity().length() != 0) {
+			var dest = this.getPosition().add(this.getVelocity().mul(deltaTime));
+			var destTilePos = dest.toTilePosition();
+			if (room.isWalkableTile(destTilePos)){
+				var destTile = room.getTile(destTilePos);
+				var decorCollide = false;
+				var hs2 = this.getBaseHitShape().translate(dest);
+				destTile.getDecor().forEach(function (decorum : Decorum) {
+					var hs1 = decorum.getHitShape().translate(destTilePos.toPosition());
+					if (doesCollide(hs1, hs2)){
+						decorCollide = true;
+					}
+				});
+				if (!decorCollide) {
+					this.setPosition(this.getPosition().add(this.getVelocity().mul(deltaTime)));
+				} else {
+					this.setVelocity(new Vec2d(0,0));
+					//this.setPosition(this.getPosition().add(this.getVelocity()));
 				}
-			});
-			if (!decorCollide) {
-				this.setPosition(this.getPosition().add(this.getVelocity()));
 			} else {
 				this.setVelocity(new Vec2d(0,0));
 				//this.setPosition(this.getPosition().add(this.getVelocity()));
 			}
-		} else {
-			this.setVelocity(new Vec2d(0,0));
-			//this.setPosition(this.getPosition().add(this.getVelocity()));
 		}
 	}
 	

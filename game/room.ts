@@ -9,8 +9,20 @@ tiledImage.src = "res/tiled.png";
 var testImage = new Image();
 testImage.src = "res/test.png";
 
+var wall1TopImage = new Image();
+wall1TopImage.src = "res/wall1top.png";
+
+var glassTopImage = new Image();
+glassTopImage.src = "res/glasstop.png";
+
+//var wall1LeftImage = new Image();
+//wall1LeftImage.src = "res/wall1left.png";
+
 export enum DecorumObject {
-	Test = "test"
+	Test = "test",
+	Wall1Top = "wall1top",
+	//Wall1Left = "wall1left",
+	GlassTop = "glasstop"
 }
 
 export enum TileMaterial {
@@ -26,7 +38,44 @@ export class Decorum {
 	direction : Cardinal;
 	
 	getHitShape() {
-		return new HitBox(new Vec2d(0,20), new Vec2d(32,32));
+		switch (this.decorumObject) {
+			case DecorumObject.Test: {
+				return new HitBox(new Vec2d(0,20), new Vec2d(32,32));
+				break;
+			}
+			case DecorumObject.Wall1Top: {
+				return new HitBox(new Vec2d(0,22), new Vec2d(32,32));
+				break;
+			}
+			//case DecorumObject.Wall1Left: {
+			//	return new HitBox(new Vec2d(22,0), new Vec2d(32,32));
+			//	break;
+			//}
+			case DecorumObject.GlassTop: {
+				return new HitBox(new Vec2d(0,22), new Vec2d(32,32));
+				break;
+			}
+			//default: {
+			//	return new HitBox(new Vec2d(0,0), new Vec2d(32,32));
+			//}
+		}
+	}
+	
+	getOriginPoint() {
+		switch (this.decorumObject) {
+			case DecorumObject.Test: {
+				return new Vec2d(16,28);
+				break;
+			}
+			case DecorumObject.Wall1Top: {
+				return new Vec2d(16,32);
+				break;
+			}
+			case DecorumObject.GlassTop: {
+				return new Vec2d(16,32);
+				break;
+			}
+		}
 	}
 	
 	getDecorumObject() {return this.decorumObject;}
@@ -73,9 +122,9 @@ export class Room {
 	
 	isValidTile(tilePos : TilePosition) : boolean {
 		var valid = false;
-		if ((0 <= tilePos.getX()) && (tilePos.getX() < this.tiles.length)) {
-			var tilerow = this.tiles[tilePos.getX()];
-			tilerow.forEach(function (tile){if (tile.getTilePosition().getY() == tilePos.getY()) valid = true;});
+		if ((0 <= tilePos.getY()) && (tilePos.getY() < this.tiles.length)) {
+			var tilerow = this.tiles[tilePos.getY()];
+			tilerow.forEach(function (tile){if (tile.getTilePosition().getX() == tilePos.getX()) valid = true;});
 		}
 		return valid;
 	}
@@ -131,6 +180,19 @@ export function drawDecorum(ctx : CanvasRenderingContext2D, translation : Vec2d,
 	switch(decorum.decorumObject) {
 		case DecorumObject.Test: {
 			ctx.drawImage(testImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - testImage.height + 32);
+			break;
 		}
+		case DecorumObject.Wall1Top: {
+			ctx.drawImage(wall1TopImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - wall1TopImage.height+64);
+			break;
+		}		
+		case DecorumObject.GlassTop: {
+			ctx.drawImage(glassTopImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - glassTopImage.height+64);
+			break;
+		}
+		//case DecorumObject.Wall1Left: {
+		//	ctx.drawImage(wall1LeftImage, pos.getX() + translation.getX(), pos.getY() + //translation.getY() - wall1LeftImage.height+90);
+		//	break;
+		//}
 	}
 }

@@ -2,7 +2,7 @@ import {Vec2d, TilePosition} from "./data";
 import {Cardinal, Diagonal, Direction} from "./direction";
 import {DecorumObject, TileMaterial, Decorum, Tile, Room, drawTile, drawTileFloor, drawTileDecor, drawDecorum} from "./room";
 import {Player, Entity} from "./entities";
-import {TILESIZE} from "./constants";
+import {TILESIZE, FPS} from "./constants";
 
 
 //<body onresize="resizeCanvas()" onload="resizeCanvas()">
@@ -45,12 +45,12 @@ for (var i = 0; i < 21; i++){ // Rows
 		if (i + j < 35) {
 			if (Math.abs(10-i)*Math.abs(10 - j) > 5) {
 				if (Math.abs(i-j) > 3) {
-					tiles[i][j] = new Tile(new TilePosition(i,j), TileMaterial.Tiled, "", []);
+					tiles[i][j] = new Tile(new TilePosition(j,i), TileMaterial.Tiled, "", []);
 				} else {
-					tiles[i][j] = new Tile(new TilePosition(i,j), TileMaterial.Solid, "rgba(130,0,0,1)", []);
+					tiles[i][j] = new Tile(new TilePosition(j,i), TileMaterial.Solid, "rgba(130,0,0,1)", []);
 				}
 			} else {
-				tiles[i][j] = new Tile(new TilePosition(i,j), TileMaterial.Chess, "", []);
+				tiles[i][j] = new Tile(new TilePosition(j,i), TileMaterial.Chess, "", []);
 			}
 		}
 	}
@@ -59,7 +59,23 @@ for (var i = 0; i < 21; i++){ // Rows
 	
 var room = new Room("Main", tiles, new TilePosition(5,5));
 room.getTiles()[4][4].setDecor([new Decorum(DecorumObject.Test, "", Cardinal.S)]);
+room.getTiles()[8][6].setDecor([new Decorum(DecorumObject.Test, "", Cardinal.S)]);
+room.getTiles()[12][12].setDecor([new Decorum(DecorumObject.Test, "", Cardinal.S)]);
 room.getTiles()[6][7].setMaterial(TileMaterial.Blank);	
+room.getTiles()[0].forEach(function (tile : Tile) {tile.setMaterial(TileMaterial.Blank);tile.setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)])} );
+room.getTiles()[15][3].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
+room.getTiles()[15][4].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
+room.getTiles()[15][5].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
+room.getTiles()[15][6].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
+room.getTiles()[15][7].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
+
+room.getTiles()[15][12].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
+room.getTiles()[15][13].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
+room.getTiles()[15][14].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
+room.getTiles()[15][15].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
+room.getTiles()[15][16].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
+//room.getTiles().forEach(function (tilerow : Tile[]) {tilerow[0].setMaterial(TileMaterial.Blank); tilerow[0].setDecor([new Decorum(DecorumObject.Wall1Left, "", Cardinal.E)])});
+//room.getTiles()[0][0].setDecor([new Decorum(DecorumObject.Test, "", Cardinal.S),new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
 	
 scene.width = room.getDimension().getX();
 scene.height = room.getDimension().getY();
@@ -75,7 +91,7 @@ var canvasPosition = {
 };
 
 function initialise(){ //~60fps
-	const gl = setInterval(gameLoop, 16);
+	const gl = setInterval(gameLoop, 1/FPS*1000);
 }
 
 var translation = new Vec2d(40,40); // Need to flesh this out with a full system for translations & rotations -- Might just be able to just draw onto another context and then draw that context transformed within this one
@@ -83,21 +99,22 @@ var transVel = new Vec2d(0,0);
 
 function gameLoop(){ // Does the bare minimal right now. No collision detection or anything, yet.
 	var currentTime = Date.now();
-	var delta = currentTime - lastTime;
+	var deltaTime = (currentTime - lastTime)/1000;
 	lastTime = currentTime;
 	rectpos = new Vec2d((currentTime/2)%900, (currentTime/2)%800);
 	
-	var accel = player.getVelocity().mul(-0.4);
+	var accel = player.getVelocity().mul(-15);
 	var acceltemp = new Vec2d(0,0);
-	if (keysPressed[37]) acceltemp = acceltemp.add(new Vec2d(-1,0));
-	if (keysPressed[38]) acceltemp = acceltemp.add(new Vec2d(0,-1));
-	if (keysPressed[39]) acceltemp = acceltemp.add(new Vec2d(1,0));
-	if (keysPressed[40]) acceltemp = acceltemp.add(new Vec2d(0,1));
-	acceltemp = acceltemp.max(1);
+	if (keysPressed[37]) acceltemp = acceltemp.add(new Vec2d(-100000,0)); //walking controls, test
+	if (keysPressed[38]) acceltemp = acceltemp.add(new Vec2d(0,-100000));
+	if (keysPressed[39]) acceltemp = acceltemp.add(new Vec2d(100000,0));
+	if (keysPressed[40]) acceltemp = acceltemp.add(new Vec2d(0,100000));
+	acceltemp = acceltemp.max(100000).mul(deltaTime);
 	if (acceltemp.length() != 0) player.setDirection(acceltemp.getCardinalDirection()); 
-	player.setVelocity(player.getVelocity().add(accel.add(acceltemp)));
-	player.setVelocity(player.getVelocity().max(4));
-	player.update(room);
+	accel = (accel.add(acceltemp)).mul(deltaTime);
+	player.setVelocity(player.getVelocity().add(accel));
+	player.setVelocity(player.getVelocity());//.max(100));
+	player.update(room, deltaTime);
 	draw();
 	
 	var targetTrans = new Vec2d(canvas.width/2, canvas.height/2).add(room.getDimension().mul(-0.5));
@@ -125,18 +142,41 @@ function draw(){
 	   });
    });
 	
+	var playerPos = player.getTilePosition();
+	var playerY = player.getTilePosition().getY();
 	
-	if (player.getTilePosition().getY() >= 0 && player.getTilePosition().getY() - 1 < tilerows.length) {
+	if (playerY >= 0 && playerY < tilerows.length) {
 
-		for (var i = 0; i < player.getTilePosition().getY(); i++){
+		for (var i = 0; i < playerY; i++){
 			tilerows[i].forEach(function (tile) {
 				drawTileDecor(ctx, translation, room, tile.getTilePosition());
 		   });
 		}
 		
+		var tilecols = tilerows[playerY];
+		tilecols.forEach(function (tile) {
+			tile.getDecor().forEach(function (decorum : Decorum) {
+				if (decorum.getOriginPoint().add(tile.getPosition()).getY() < player.getPosition().getY()) {
+					drawDecorum(ctx, translation, room, tile.getTilePosition(), decorum); 
+				}
+			});
+		});
+		
 		player.draw(ctx, translation);
+		
+		tilecols.forEach(function (tile) { //todo: can probably optimise this
+			tile.getDecor().forEach(function (decorum : Decorum) {
+				if (decorum.getOriginPoint().add(tile.getPosition()).getY() >= player.getPosition().getY()) {
+					drawDecorum(ctx, translation, room, tile.getTilePosition(), decorum); 
+				}
+			});
+		});
+		//tile.getDecor().forEach(function(decorum : Decorum) {
+		//	if (decorum.getPosition().add(tile)
+		//});
+		//player.draw(ctx, translation);
 
-		for (var i = player.getTilePosition().getY(); i < tilerows.length; i++){
+		for (var i = playerY + 1; i < tilerows.length; i++){
 			tilerows[i].forEach(function (tile) {
 				drawTileDecor(ctx, translation, room, tile.getTilePosition());
 		    });
