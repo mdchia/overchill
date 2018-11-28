@@ -1,7 +1,7 @@
 import {Vec2d, TilePosition} from "./data";
 import {Cardinal, Diagonal, Direction} from "./direction";
 import {DecorumObject, TileMaterial, Decorum, Tile, Room, drawTile, drawTileFloor, drawTileDecor, drawDecorum} from "./room";
-import {Player, Entity} from "./entities";
+import {Player, EntityState, Entity, Pest} from "./entities";
 import {TILESIZE, FPS} from "./constants";
 
 
@@ -68,10 +68,29 @@ room.getTiles()[15][4].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardina
 room.getTiles()[15][5].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
 room.getTiles()[15][6].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
 room.getTiles()[15][7].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
+room.getTiles()[16][2].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[17][2].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[18][2].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[19][2].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][2].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[16][8].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[17][8].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[18][8].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[19][8].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][8].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][3].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][4].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][5].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][6].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[20][7].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[15][2].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+room.getTiles()[15][8].setDecor([new Decorum(DecorumObject.Blockade, "", Cardinal.S)]);
+
+
 
 room.getTiles()[15][12].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
 room.getTiles()[15][13].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
-room.getTiles()[15][14].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
+room.getTiles()[15][14].setDecor([new Decorum(DecorumObject.GlassTop, "", Cardinal.S)]);
 room.getTiles()[15][15].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
 room.getTiles()[15][16].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardinal.S)]);
 //room.getTiles().forEach(function (tilerow : Tile[]) {tilerow[0].setMaterial(TileMaterial.Blank); tilerow[0].setDecor([new Decorum(DecorumObject.Wall1Left, "", Cardinal.E)])});
@@ -80,10 +99,18 @@ room.getTiles()[15][16].setDecor([new Decorum(DecorumObject.Wall1Top, "", Cardin
 scene.width = room.getDimension().getX();
 scene.height = room.getDimension().getY();
 
-var player = new Player("John Smith", room.getInitialTile().getCentre(), new Vec2d(0,0), Cardinal.S);
+var player = new Player("John Smith", room.getInitialTile().getCentre(), new Vec2d(0,0), Cardinal.S, EntityState.Standing, 0);
 //---------
+var testPests : Pest[];
+testPests = [];
+testPests[0] = new Pest("goober1", new Vec2d(140,600), new Vec2d(0,0), Cardinal.E, EntityState.Standing, 0);
+testPests[3] = new Pest("goober2", new Vec2d(180,600), new Vec2d(0,0), Cardinal.E, EntityState.Standing, 0);
+testPests[4] = new Pest("goober3", new Vec2d(140,640), new Vec2d(0,0), Cardinal.E, EntityState.Standing, 0);
 
-
+//var entities : Entity[];
+//entities = [];
+//entities[0] = player;
+//entities[1] = testPest;
 
 var canvasPosition = {
     x: canvas.offsetLeft,
@@ -99,7 +126,7 @@ var transVel = new Vec2d(0,0);
 
 function gameLoop(){ // Does the bare minimal right now. No collision detection or anything, yet.
 	var currentTime = Date.now();
-	var deltaTime = (currentTime - lastTime)/1000;
+	var deltaTime = 1/FPS;//(currentTime - lastTime)/1000;
 	lastTime = currentTime;
 	rectpos = new Vec2d((currentTime/2)%900, (currentTime/2)%800);
 	
@@ -113,8 +140,18 @@ function gameLoop(){ // Does the bare minimal right now. No collision detection 
 	if (acceltemp.length() != 0) player.setDirection(acceltemp.getCardinalDirection()); 
 	accel = (accel.add(acceltemp)).mul(deltaTime);
 	player.setVelocity(player.getVelocity().add(accel));
-	player.setVelocity(player.getVelocity());//.max(100));
+	//player.setVelocity(player.getVelocity()).max(100));
 	player.update(room, deltaTime);
+	
+	testPests.forEach(function (testPest) {
+		var pestAccel = testPest.getVelocity().mul(-3).mul(deltaTime);
+		if (Math.floor(Math.random() * 150) == 1){
+			var angle = Math.floor(Math.random()*360);
+			testPest.setVelocity(new Vec2d(Math.cos(angle), Math.sin(angle)).mul(100));
+		}
+		testPest.setVelocity(testPest.getVelocity().add(pestAccel));
+		testPest.update(room, deltaTime);
+	});
 	draw();
 	
 	var targetTrans = new Vec2d(canvas.width/2, canvas.height/2).add(room.getDimension().mul(-0.5));
@@ -131,7 +168,7 @@ function draw(){
    ctx.fillStyle = "black";
    ctx.fillRect(rectpos.getX(), rectpos.getY(), 20, 20);
    ctx.fillStyle = "blue";
-   ctx.fillRect(rect2pos.getX() + translation.getX(), rect2pos.getY() + translation.getY(), 10, 10);
+   ctx.fillRect(rect2pos.getX(), rect2pos.getY(), 10, 10);
 	
    //-------------------------------------
    
@@ -191,6 +228,9 @@ function draw(){
 		});
 	}
 	
+	testPests.forEach(function (testPest) {
+	testPest.draw(ctx, translation);
+	});
    // We can draw things to sceneCtx instead and draw them to the screen using the following:
    // This operates as a sort of "window" or "layer" within our canvas.
    //ctx.putImageData(sceneCtx.getImageData(0,0,scene.width,scene.height),translateX,translateY);

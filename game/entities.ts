@@ -12,6 +12,14 @@ interface drawable {
 }
 
 
+export enum EntityState {
+	Standing = 0,
+	Idle = 1,
+	Walking = 2,
+	Running = 3
+}
+
+
 export abstract class Entity implements updatable, drawable {
 	name: String;
 	pos: Vec2d;
@@ -19,13 +27,19 @@ export abstract class Entity implements updatable, drawable {
 	dimensions : Vec2d;
 	
 	hitshape : HitShape;
-	
-	
 	direction : Direction;
-	constructor(name : String, pos : Vec2d, velo : Vec2d, direction : Direction, dimensions : Vec2d, hs : HitShape){
-		this.name = name; this.pos = pos; this.velo = velo; this.direction = direction; this.dimensions = dimensions; this.hitshape = hs;
+	
+	state : EntityState;
+	frame : number;
+	
+	
+	constructor(name : String, pos : Vec2d, velo : Vec2d, direction : Direction, dimensions : Vec2d, hs : HitShape, state : EntityState, frame : number){
+		this.name = name; this.pos = pos; this.velo = velo; this.direction = direction; this.dimensions = dimensions; this.hitshape = hs; this.state = state; this.frame = frame;
 	}
 	
+	
+	getDirection() {return this.direction;}
+	setDirection(direction : Direction) {this.direction = direction;}
 	
 	getHitShape() {return this.getBaseHitShape().translate(this.getPosition());}
 	getBaseHitShape() {return this.hitshape;}
@@ -36,9 +50,11 @@ export abstract class Entity implements updatable, drawable {
 	setVelocity(velo : Vec2d) {this.velo = velo;}
 	getDimensions() {return this.dimensions;}
 	setDimensions(dim : Vec2d) {this.dimensions = dim;}
+	getState() {return this.state;}
+	setState(state : EntityState) {this.state = state;}
+	getFrame() {return this.frame;}
+	setFrame(frame : number) {this.frame = frame;}
 	
-	getDirection() {return this.direction;}
-	setDirection(direction : Direction) {this.direction = direction;}
 	
 	getTilePosition() {return this.getPosition().toTilePosition();}
 	
@@ -72,43 +88,48 @@ export abstract class Entity implements updatable, drawable {
 	abstract draw(ctx : CanvasRenderingContext2D, translation : Vec2d) : void;
 }
 
-var playerFrames : HTMLImageElement[];
+var numberOfFramesInEachAnimationCycle = [1, 0, 1, 0];
+
+var playerFrames : HTMLImageElement[][][];
 playerFrames = [];
-for (var i = 0; i<4; i++) {
-	playerFrames[i] = new Image();
-	playerFrames[i].src = "res/player/frame" + i + ".png";
+for (let state in EntityState) {
+	if (!isNaN(Number(state))) {
+		playerFrames[state] = [];
+		for (let dir in Cardinal) {
+			if (!isNaN(Number(dir))) {
+				playerFrames[state][dir] = [];
+				for (var frame = 0; frame < numberOfFramesInEachAnimationCycle[state]; frame++) { //TODO: This is arbitrary, make more general
+					playerFrames[state][dir][frame] = new Image();
+					playerFrames[state][dir][frame].src = "res/player/state"+state+"/dir"+dir+"/frame" + frame + ".png";
+				}
+			}
+		}
+	}
 }
 
-export class Player extends Entity{
-	constructor(name : String, pos : Vec2d, velo : Vec2d, direction : Direction){
-		super(name, pos, velo, direction, new Vec2d(32, 33), new HitBox(new Vec2d(0,0), new Vec2d(32,32)));
+var pestImage = new Image();
+pestImage.src = "res/blob.png";
+
+export class Player extends Entity {
+	constructor(name : String, pos : Vec2d, velo : Vec2d, direction : Direction, state : EntityState, frame : number){
+		super(name, pos, velo, direction, new Vec2d(32, 33), new HitBox(new Vec2d(0,0), new Vec2d(32,32)), state, frame);
 	}
 	
 	draw (ctx : CanvasRenderingContext2D, translation : Vec2d) {
 		var currentImage : HTMLImageElement;
-		
-		switch (this.direction) {
-			case Cardinal.S : {
-				currentImage = playerFrames[0];
-				break;
-			}
-			case Cardinal.W : {
-				currentImage = playerFrames[1];
-				break;
-			}
-			case Cardinal.E : {
-				currentImage = playerFrames[2];
-				break;
-			}
-			case Cardinal.N : {
-				currentImage = playerFrames[3];
-				break;
-			}
-			default: {
-				currentImage = currentImage = playerFrames[0];
-			}
-		}
+		currentImage = playerFrames[this.getState()][this.getDirection()][Math.floor(this.frame)];
 		
 		ctx.drawImage(currentImage, this.pos.getX() + translation.getX() - this.getDimensions().getX()/2, this.pos.getY() + translation.getY() - currentImage.height);
 	}
+}
+
+export class Pest extends Entity {
+	constructor(name : String, pos : Vec2d, velo : Vec2d, direction : Direction, state : EntityState, frame : number){
+		super(name, pos, velo, direction, new Vec2d(32, 33), new HitBox(new Vec2d(0,0), new Vec2d(32,32)), state, frame);
+	}
+	
+	draw (ctx : CanvasRenderingContext2D, translation : Vec2d) {
+		ctx.drawImage(pestImage, this.pos.getX() + translation.getX() - this.getDimensions().getX()/2, this.pos.getY() + translation.getY() - pestImage.height);
+	}
+	
 }

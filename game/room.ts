@@ -15,6 +15,9 @@ wall1TopImage.src = "res/wall1top.png";
 var glassTopImage = new Image();
 glassTopImage.src = "res/glasstop.png";
 
+var blockadeImage = new Image();
+blockadeImage.src = "res/blockade.png";
+
 //var wall1LeftImage = new Image();
 //wall1LeftImage.src = "res/wall1left.png";
 
@@ -22,7 +25,8 @@ export enum DecorumObject {
 	Test = "test",
 	Wall1Top = "wall1top",
 	//Wall1Left = "wall1left",
-	GlassTop = "glasstop"
+	GlassTop = "glasstop",
+	Blockade = "blockade"
 }
 
 export enum TileMaterial {
@@ -55,6 +59,11 @@ export class Decorum {
 				return new HitBox(new Vec2d(0,22), new Vec2d(32,32));
 				break;
 			}
+			
+			case DecorumObject.Blockade: {
+				return new HitBox(new Vec2d(0,0), new Vec2d(32,32));
+				break;
+			}
 			//default: {
 			//	return new HitBox(new Vec2d(0,0), new Vec2d(32,32));
 			//}
@@ -73,6 +82,10 @@ export class Decorum {
 			}
 			case DecorumObject.GlassTop: {
 				return new Vec2d(16,32);
+				break;
+			}
+			case DecorumObject.Blockade: {
+				return new Vec2d(16,-1);
 				break;
 			}
 		}
@@ -188,6 +201,10 @@ export function drawDecorum(ctx : CanvasRenderingContext2D, translation : Vec2d,
 		}		
 		case DecorumObject.GlassTop: {
 			ctx.drawImage(glassTopImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - glassTopImage.height+64);
+			break;
+		}
+		case DecorumObject.Blockade: {
+			ctx.drawImage(blockadeImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - blockadeImage.height+32);
 			break;
 		}
 		//case DecorumObject.Wall1Left: {

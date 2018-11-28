@@ -9,11 +9,14 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
     wall1TopImage.src = "res/wall1top.png";
     var glassTopImage = new Image();
     glassTopImage.src = "res/glasstop.png";
+    var blockadeImage = new Image();
+    blockadeImage.src = "res/blockade.png";
     var DecorumObject;
     (function (DecorumObject) {
         DecorumObject["Test"] = "test";
         DecorumObject["Wall1Top"] = "wall1top";
         DecorumObject["GlassTop"] = "glasstop";
+        DecorumObject["Blockade"] = "blockade";
     })(DecorumObject = exports.DecorumObject || (exports.DecorumObject = {}));
     var TileMaterial;
     (function (TileMaterial) {
@@ -41,6 +44,10 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
                     return new data_1.HitBox(new data_1.Vec2d(0, 22), new data_1.Vec2d(32, 32));
                     break;
                 }
+                case DecorumObject.Blockade: {
+                    return new data_1.HitBox(new data_1.Vec2d(0, 0), new data_1.Vec2d(32, 32));
+                    break;
+                }
             }
         };
         Decorum.prototype.getOriginPoint = function () {
@@ -55,6 +62,10 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
                 }
                 case DecorumObject.GlassTop: {
                     return new data_1.Vec2d(16, 32);
+                    break;
+                }
+                case DecorumObject.Blockade: {
+                    return new data_1.Vec2d(16, -1);
                     break;
                 }
             }
@@ -167,6 +178,10 @@ define(["require", "exports", "./data", "./constants"], function (require, expor
             }
             case DecorumObject.GlassTop: {
                 ctx.drawImage(glassTopImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - glassTopImage.height + 64);
+                break;
+            }
+            case DecorumObject.Blockade: {
+                ctx.drawImage(blockadeImage, pos.getX() + translation.getX(), pos.getY() + translation.getY() - blockadeImage.height + 32);
                 break;
             }
         }

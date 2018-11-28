@@ -54,14 +54,36 @@ define(["require", "exports", "./data", "./direction", "./room", "./entities", "
     room.getTiles()[15][5].setDecor([new room_1.Decorum(room_1.DecorumObject.GlassTop, "", direction_1.Cardinal.S)]);
     room.getTiles()[15][6].setDecor([new room_1.Decorum(room_1.DecorumObject.GlassTop, "", direction_1.Cardinal.S)]);
     room.getTiles()[15][7].setDecor([new room_1.Decorum(room_1.DecorumObject.GlassTop, "", direction_1.Cardinal.S)]);
+    room.getTiles()[16][2].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[17][2].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[18][2].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[19][2].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][2].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[16][8].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[17][8].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[18][8].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[19][8].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][8].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][3].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][4].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][5].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][6].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[20][7].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[15][2].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
+    room.getTiles()[15][8].setDecor([new room_1.Decorum(room_1.DecorumObject.Blockade, "", direction_1.Cardinal.S)]);
     room.getTiles()[15][12].setDecor([new room_1.Decorum(room_1.DecorumObject.Wall1Top, "", direction_1.Cardinal.S)]);
     room.getTiles()[15][13].setDecor([new room_1.Decorum(room_1.DecorumObject.Wall1Top, "", direction_1.Cardinal.S)]);
-    room.getTiles()[15][14].setDecor([new room_1.Decorum(room_1.DecorumObject.Wall1Top, "", direction_1.Cardinal.S)]);
+    room.getTiles()[15][14].setDecor([new room_1.Decorum(room_1.DecorumObject.GlassTop, "", direction_1.Cardinal.S)]);
     room.getTiles()[15][15].setDecor([new room_1.Decorum(room_1.DecorumObject.Wall1Top, "", direction_1.Cardinal.S)]);
     room.getTiles()[15][16].setDecor([new room_1.Decorum(room_1.DecorumObject.Wall1Top, "", direction_1.Cardinal.S)]);
     scene.width = room.getDimension().getX();
     scene.height = room.getDimension().getY();
-    var player = new entities_1.Player("John Smith", room.getInitialTile().getCentre(), new data_1.Vec2d(0, 0), direction_1.Cardinal.S);
+    var player = new entities_1.Player("John Smith", room.getInitialTile().getCentre(), new data_1.Vec2d(0, 0), direction_1.Cardinal.S, entities_1.EntityState.Standing, 0);
+    var testPests;
+    testPests = [];
+    testPests[0] = new entities_1.Pest("goober1", new data_1.Vec2d(140, 600), new data_1.Vec2d(0, 0), direction_1.Cardinal.E, entities_1.EntityState.Standing, 0);
+    testPests[3] = new entities_1.Pest("goober2", new data_1.Vec2d(180, 600), new data_1.Vec2d(0, 0), direction_1.Cardinal.E, entities_1.EntityState.Standing, 0);
+    testPests[4] = new entities_1.Pest("goober3", new data_1.Vec2d(140, 640), new data_1.Vec2d(0, 0), direction_1.Cardinal.E, entities_1.EntityState.Standing, 0);
     var canvasPosition = {
         x: canvas.offsetLeft,
         y: canvas.offsetTop
@@ -73,7 +95,7 @@ define(["require", "exports", "./data", "./direction", "./room", "./entities", "
     var transVel = new data_1.Vec2d(0, 0);
     function gameLoop() {
         var currentTime = Date.now();
-        var deltaTime = (currentTime - lastTime) / 1000;
+        var deltaTime = 1 / constants_1.FPS;
         lastTime = currentTime;
         rectpos = new data_1.Vec2d((currentTime / 2) % 900, (currentTime / 2) % 800);
         var accel = player.getVelocity().mul(-15);
@@ -91,8 +113,16 @@ define(["require", "exports", "./data", "./direction", "./room", "./entities", "
             player.setDirection(acceltemp.getCardinalDirection());
         accel = (accel.add(acceltemp)).mul(deltaTime);
         player.setVelocity(player.getVelocity().add(accel));
-        player.setVelocity(player.getVelocity());
         player.update(room, deltaTime);
+        testPests.forEach(function (testPest) {
+            var pestAccel = testPest.getVelocity().mul(-3).mul(deltaTime);
+            if (Math.floor(Math.random() * 150) == 1) {
+                var angle = Math.floor(Math.random() * 360);
+                testPest.setVelocity(new data_1.Vec2d(Math.cos(angle), Math.sin(angle)).mul(100));
+            }
+            testPest.setVelocity(testPest.getVelocity().add(pestAccel));
+            testPest.update(room, deltaTime);
+        });
         draw();
         var targetTrans = new data_1.Vec2d(canvas.width / 2, canvas.height / 2).add(room.getDimension().mul(-0.5));
         transVel = targetTrans.sub(translation).mul(0.1);
@@ -104,7 +134,7 @@ define(["require", "exports", "./data", "./direction", "./room", "./entities", "
         ctx.fillStyle = "black";
         ctx.fillRect(rectpos.getX(), rectpos.getY(), 20, 20);
         ctx.fillStyle = "blue";
-        ctx.fillRect(rect2pos.getX() + translation.getX(), rect2pos.getY() + translation.getY(), 10, 10);
+        ctx.fillRect(rect2pos.getX(), rect2pos.getY(), 10, 10);
         var tilerows = room.getTiles();
         tilerows.forEach(function (tilecols) {
             tilecols.forEach(function (tile) {
@@ -149,6 +179,9 @@ define(["require", "exports", "./data", "./direction", "./room", "./entities", "
                 });
             });
         }
+        testPests.forEach(function (testPest) {
+            testPest.draw(ctx, translation);
+        });
     }
     function canvasSizeChanged() {
         canvasWidth = canvas.width;
